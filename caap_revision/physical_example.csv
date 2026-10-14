@@ -1,0 +1,9 @@
+subject,attempt,success,condition,model
+A,1,1,nominal,ccnet
+A,2,0,nominal,ccnet
+A,3,0,nominal,ccnet
+A,4,0,nominal,ccnet
+B,1,0,nominal,ccnet
+B,2,0,nominal,ccnet
+B,3,0,nominal,ccnet
+B,4,0,nominal,ccnet

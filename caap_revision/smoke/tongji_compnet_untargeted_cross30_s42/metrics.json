@@ -1,0 +1,66 @@
+{
+  "val_asr": 0.0,
+  "test_asr_oracle": 0.0,
+  "test_oracle_ci95": [
+    0.0,
+    8.76
+  ],
+  "test_denominator": 40,
+  "test_asr_deploy": 0.0,
+  "test_deploy_ci95": [
+    0.0,
+    8.76
+  ],
+  "deploy_robustness": {
+    "clean": {
+      "asr": 0.0,
+      "n": 40,
+      "ci95": [
+        0.0,
+        8.76
+      ]
+    },
+    "blur5": {
+      "asr": 0.0,
+      "n": 40,
+      "ci95": [
+        0.0,
+        8.76
+      ]
+    },
+    "gamma1.8": {
+      "asr": 0.0,
+      "n": 40,
+      "ci95": [
+        0.0,
+        8.76
+      ]
+    },
+    "jpeg40": {
+      "asr": 0.0,
+      "n": 40,
+      "ci95": [
+        0.0,
+        8.76
+      ]
+    }
+  },
+  "best_epoch": 1,
+  "seed": 42,
+  "val_ratio": 0.2,
+  "total_epochs": 1,
+  "attack_mode": "untargeted",
+  "target_class": null,
+  "dataset": "tongji",
+  "net": "compnet",
+  "patch_size": 30,
+  "patch_shape": "cross",
+  "mask_area": 459.0,
+  "mask_fill_ratio": 0.5099999904632568,
+  "location_strategy": "center",
+  "lambda_adv": 1.0,
+  "lambda_vis": 0.004,
+  "lambda_id": 0.2,
+  "lambda_tv": 2e-05,
+  "total_time_minutes": 0.01671669880549113
+}

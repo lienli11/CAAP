@@ -1,0 +1,21 @@
+# Local Python environments and generated caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+.DS_Store
+
+# Local credentials must never be included in the archive
+.env
+.env.*
+!.env.example
+!.env.sample
+.netrc
+.pypirc
+
+# Git's nested metadata is retained locally, not archived.
+# Project PDFs, model checkpoints, data artifacts, doc/ and plan/ are included.
