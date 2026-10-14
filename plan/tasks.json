@@ -1,0 +1,1998 @@
+{
+  "schema_version": "caap.tasks.v2",
+  "plan_version": "caap-full-v2",
+  "reviewer_ids": [
+    "R1-1",
+    "R1-2",
+    "R1-3",
+    "R1-4",
+    "R1-5",
+    "R1-6",
+    "R1-7",
+    "R2-1",
+    "R2-2",
+    "R2-3",
+    "R2-4",
+    "R2-5",
+    "R3-1",
+    "R3-2",
+    "R3-3",
+    "R3-4"
+  ],
+  "hypothesis_ids": [
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5"
+  ],
+  "tasks": [
+    {
+      "id": "F01",
+      "title": "冻结 full 研究范围与授权边界",
+      "phase": 0,
+      "depends_on": [],
+      "owned_paths": [
+        "configs/profiles/full.json",
+        "configs/protocols/full.json",
+        "reports/F01/**"
+      ],
+      "inputs": [
+        "plan/tasks.json",
+        "plan/01-协议与产物契约.md",
+        "doc/02-审稿意见.md",
+        "用户资源与许可授权"
+      ],
+      "outputs": [
+        "configs/profiles/full.json",
+        "configs/protocols/full.json",
+        "reports/F01/scope-audit.json"
+      ],
+      "acceptance": [
+        "full 明列 F01-F45、16 条意见、H1-H5，缺资产不自动降为最小范围",
+        "草案可保留 null 预算并 development_done；实际派发必须有明确 CPU/GPU/存储/人次上限及最多 2 次同根因重试，不把草案当授权",
+        "候选协议与已完成证据分开，所有科学任务保留 planned"
+      ],
+      "evidence_for": [
+        "R2-4"
+      ],
+      "capabilities": [
+        "cpu",
+        "human"
+      ],
+      "spec": "plan/slices/01-foundation.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F02",
+      "title": "远程 clone 与准确版本交接",
+      "phase": 1,
+      "depends_on": [
+        "F01"
+      ],
+      "owned_paths": [
+        "src/caap/tools/handoff.py",
+        "tests/unit/test_handoff.py",
+        "reports/F02/**"
+      ],
+      "inputs": [
+        "获准 repository URL、commit、远程工作区",
+        "F01 资源边界",
+        "本地 dirty diff 和迁移路径映射"
+      ],
+      "outputs": [
+        "reports/F02/handoff.json",
+        "reports/F02/remote-version-check.json"
+      ],
+      "acceptance": [
+        "远端 HEAD、源码树与批准快照一致，未提交改动明确为待交接而非已在远端",
+        "旧算法迁移仅路径/import 等机械差异；P0 缺陷不得标已修",
+        "未授权 SSH、未知主机、缺目标目录参数均阻塞，不硬编码用户名或绝对服务器路径"
+      ],
+      "evidence_for": [],
+      "capabilities": [
+        "git",
+        "network",
+        "human"
+      ],
+      "spec": "plan/slices/01-foundation.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F03",
+      "title": "环境与 GPU 能力和成本标定",
+      "phase": 2,
+      "depends_on": [
+        "F02"
+      ],
+      "owned_paths": [
+        "src/caap/runtime/doctor.py",
+        "src/caap/runtime/benchmark.py",
+        "configs/profiles/hardware.json",
+        "tests/unit/test_environment_probe.py",
+        "reports/F03/**"
+      ],
+      "inputs": [
+        "F02 版本交接",
+        "批准的设备与独立环境",
+        "依赖锁及来源"
+      ],
+      "outputs": [
+        "reports/F03/environment.json",
+        "reports/F03/benchmark.json",
+        "configs/profiles/hardware.json"
+      ],
+      "acceptance": [
+        "逐设备记录驱动、CUDA、Torch、显存、精度和 warm-up 后成本，不用设备名字推算吞吐",
+        "无 CUDA 时 CPU 检查可完成，但 GPU 工作标 BLOCKED_ASSET 而非通过",
+        "环境安装只在批准的独立环境内，探测不下载权重或读取最终测试标签"
+      ],
+      "evidence_for": [
+        "R2-4"
+      ],
+      "capabilities": [
+        "cpu",
+        "gpu"
+      ],
+      "spec": "plan/slices/01-foundation.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F04",
+      "title": "多 Agent 路径所有权与设备租约",
+      "phase": 2,
+      "depends_on": [
+        "F02"
+      ],
+      "owned_paths": [
+        "src/caap/runtime/leases.py",
+        "src/caap/runtime/scheduler.py",
+        "tests/unit/test_leases.py",
+        "tests/integration/test_scheduler.py",
+        "runs/control/**",
+        "reports/F04/**"
+      ],
+      "inputs": [
+        "plan/tasks.json",
+        "F01 授权资源",
+        "F02 仓库快照"
+      ],
+      "outputs": [
+        "reports/F04/lease-tests.json",
+        "runs/control/state.json",
+        "runs/control/events.jsonl"
+      ],
+      "acceptance": [
+        "双 worker 竞争同任务、重叠 owned_paths 或同 GPU 时最多一方持有有效租约",
+        "每条 depends_on 绑定 development_done 契约证据；真实 execution_prerequisites 另核资产/角色/预算/freeze/父hash；缺绑定拒绝相应阶段，不按编号排序",
+        "过期租约先核查进程和 fencing token，旧 worker 不得发布结果；默认每卡一个训练 job"
+      ],
+      "evidence_for": [
+        "R2-4"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/01-foundation.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F05",
+      "title": "观察、检查点接力和有限失败恢复",
+      "phase": 3,
+      "depends_on": [
+        "F04"
+      ],
+      "owned_paths": [
+        "src/caap/runtime/observer.py",
+        "src/caap/runtime/recovery.py",
+        "tests/integration/test_control_recovery.py",
+        "reports/F05/**"
+      ],
+      "inputs": [
+        "F04 单写者状态与租约",
+        "运行事件和批准预算"
+      ],
+      "outputs": [
+        "reports/F05/recovery-tests.json",
+        "reports/F05/handoff-schema.json"
+      ],
+      "acceptance": [
+        "控制器重启不重复启动仍存活的 GPU 进程，所有恢复有旧 run 和父输入引用",
+        "相同错误指纹最多 2 次自动修复/重试，换 run_id 不重置计数",
+        "低 ASR、宽 CI、N/A 不触发重试；全部阻塞时输出缺口并退出而非空转"
+      ],
+      "evidence_for": [],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/01-foundation.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F06",
+      "title": "合法数据、权重、论文与实拍资产台账",
+      "phase": 1,
+      "depends_on": [
+        "F01"
+      ],
+      "owned_paths": [
+        "src/caap/tools/audit_assets.py",
+        "tests/unit/test_asset_audit.py",
+        ".local/assets/**",
+        "reports/F06/**"
+      ],
+      "inputs": [
+        "用户提供的授权资产",
+        "历史 archive/legacy 清单",
+        "论文与数据使用许可"
+      ],
+      "outputs": [
+        "reports/F06/assets.json",
+        "reports/F06/missing-assets.json"
+      ],
+      "acceptance": [
+        "每项资产有来源、许可状态、内容 hash、用途和隐私等级；未知写 unknown",
+        "不可信 pickle 不自动执行，受限资产缺失输出 BLOCKED_ASSET/BLOCKED_PERMISSION",
+        "公开报告不含原始生物模板、真实姓名或私密绝对路径；不由汇总值造原始记录"
+      ],
+      "evidence_for": [
+        "R2-2",
+        "R2-3",
+        "R2-4",
+        "R3-4"
+      ],
+      "capabilities": [
+        "cpu",
+        "assets",
+        "human"
+      ],
+      "spec": "plan/slices/02-assets-models.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F07",
+      "title": "三域 ROI、掌级标签与角色 manifest",
+      "phase": 2,
+      "depends_on": [
+        "F06"
+      ],
+      "owned_paths": [
+        "src/caap/data/manifests.py",
+        "src/caap/data/roi.py",
+        "src/caap/tools/build_manifests.py",
+        "tests/unit/test_data_manifest.py",
+        "configs/protocols/data_roles.json",
+        "runs/F07/**",
+        "reports/F07/**"
+      ],
+      "inputs": [
+        "F06 合法资产台账",
+        "Tongji/IITD/AISEC 实际元数据",
+        "既有模型训练可见性"
+      ],
+      "outputs": [
+        "runs/F07/manifests/",
+        "reports/F07/data-contract.json",
+        "reports/F07/role-audit.json",
+        "configs/protocols/data_roles.json"
+      ],
+      "acceptance": [
+        "唯一生成 recognizer_fit/val、patch_train 内 msdife_fit/val、attack_dev/select/confirm、calibration/gallery/final_probe 与合法角色关系；旧名必须显式 alias",
+        "默认攻击角色两两图像不交，dev/select 共用 search_pool 必须预注册；gallery 不交全部 probe；同人双掌不同凭据同 cluster",
+        "data-contract 与合成校验可 development_done 供 F11 使用；真实 manifest/目标/许可未验收不得 experiment_done；重复图和 val_ratio<=0 均拒绝"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R3-3"
+      ],
+      "capabilities": [
+        "cpu",
+        "assets"
+      ],
+      "spec": "plan/slices/02-assets-models.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F08",
+      "title": "真实七识别器训练与保存设施",
+      "phase": 3,
+      "depends_on": [
+        "F03",
+        "F07",
+        "F11"
+      ],
+      "owned_paths": [
+        "src/caap/tools/train_recognizer.py",
+        "src/caap/models/training.py",
+        "configs/experiments/recognizers.json",
+        "tests/integration/test_recognizer_training.py",
+        "runs/F08/**",
+        "reports/F08/**"
+      ],
+      "inputs": [
+        "F07 已冻结 recognizer_fit/recognizer_val 及角色关系，开发可只消费 data-contract",
+        "F11 模型适配接口",
+        "F03 资源标定"
+      ],
+      "outputs": [
+        "configs/experiments/recognizers.json",
+        "reports/F08/training-contract.json",
+        "runs/F08/"
+      ],
+      "acceptance": [
+        "七模型实际类、输入尺寸、头、优化器、归一化与来源逐项登记，不冒称标准 torchvision",
+        "仅消费 F07 冻结 fit/val，不自行拆分；新识别器不读取 attack_confirm/calibration/final_probe，历史可见性另记",
+        "短训保存恢复一致；真实训练需授权数据和 GPU，synthetic 夹具不算真实权重"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R2-4",
+        "R3-3"
+      ],
+      "capabilities": [
+        "cpu",
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/02-assets-models.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F09",
+      "title": "三域七模型真实权重与洁净性能验收",
+      "phase": 4,
+      "depends_on": [
+        "F08"
+      ],
+      "owned_paths": [
+        "src/caap/tools/validate_recognizers.py",
+        "tests/integration/test_real_model_gate.py",
+        "runs/F09/**",
+        "reports/F09/**"
+      ],
+      "inputs": [
+        "F08 训练权重或 F06 获准真实权重",
+        "F07 角色 manifest",
+        "预注册洁净有效性标准"
+      ],
+      "outputs": [
+        "reports/F09/registry-ready.json",
+        "reports/F09/model-registry.json",
+        "reports/F09/clean-validation.json",
+        "reports/F09/model-gates/",
+        "runs/F09/"
+      ],
+      "acceptance": [
+        "development_done 以 registry-ready.json 为证：验证器及夹具通过，3 域×7 模型共21项身份与状态均登记；允许缺资产条目 blocked/null，不要求21项真实验证全通过",
+        "每 dataset/model/weight_variant 的 validate_recognizer 科学节点独立校验权重、来源、角色与洁净 k/n，产出 model-entry 内容 hash 和对应 gate；全 registry hash 仅作整体 provenance",
+        "Tongji 某模型及其其余执行前提齐全、AISEC缺失时，只放行该 Tongji 科学子图；涉及 AISEC 的节点保持 blocked，F43 full 仍 INCOMPLETE；补齐 AISEC 不改变未变 Tongji 的科学键或触发重训",
+        "load_state_dict 严格检查头及 key，缺权重不回退随机初始化；开发/洁净门禁不解封 final_probe，最终 clean 由冻结后 evaluator 产生"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R3-3"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/02-assets-models.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F10",
+      "title": "辅助特征预训练与无随机预训三种语义",
+      "phase": 4,
+      "depends_on": [
+        "F08"
+      ],
+      "owned_paths": [
+        "src/caap/tools/pretrain_ms_dife.py",
+        "src/caap/models/feature_training.py",
+        "configs/experiments/feature_pretraining.json",
+        "tests/unit/test_feature_modes.py",
+        "runs/F10/**",
+        "reports/F10/**"
+      ],
+      "inputs": [
+        "F07 已冻结 patch_train 内 msdife_fit/msdife_val，禁止自行重划",
+        "F08 训练设施",
+        "F03 GPU 预算"
+      ],
+      "outputs": [
+        "runs/F10/",
+        "reports/F10/feature-registry.json"
+      ],
+      "acceptance": [
+        "只用 F07 的 msdife_fit 拟合/msdife_val 选模，二者是 patch_train 不交子集；不读 attack_dev/select/confirm/calibration/final_probe",
+        "none 不加载教师，random_frozen 记录随机 seed，pretrained_frozen 要求真实完整权重",
+        "禁用未定义 joint/distillation 组合；预训成本单列，随机网络不得改名预训练"
+      ],
+      "evidence_for": [
+        "R1-2",
+        "R1-3",
+        "R2-4",
+        "R2-5"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/02-assets-models.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F11",
+      "title": "模型适配、像素空间与输入梯度正确性",
+      "phase": 3,
+      "depends_on": [
+        "F02",
+        "F07"
+      ],
+      "owned_paths": [
+        "src/caap/utils/model_adapter.py",
+        "src/caap/data/data.py",
+        "tests/unit/test_model_contract.py",
+        "tests/unit/test_pixel_space.py",
+        "reports/F11/**"
+      ],
+      "inputs": [
+        "机械迁移后的七模型源码",
+        "F07 reports/F07/data-contract.json，requires_stage=development_done；不等待真实 manifest"
+      ],
+      "outputs": [
+        "reports/F11/model-pixel-tests.json",
+        "reports/F11/model-interface.json"
+      ],
+      "acceptance": [
+        "所有合成在 raw [0,1]；normalize 只在模型边界执行一次，aug_org 不受支持时显式拒绝",
+        "七模型离线前向和输入梯度 finite；识别器参数及 running buffers 不因补丁更新改变",
+        "alpha=0 外像素保持原值；NaN、错通道、错类别头、错尺寸都有失败测试"
+      ],
+      "evidence_for": [
+        "R1-3",
+        "R2-3",
+        "R2-4",
+        "R3-3"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/03-attack-correctness.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F12",
+      "title": "正向几何、alpha 与固定部署能力隔离",
+      "phase": 4,
+      "depends_on": [
+        "F11"
+      ],
+      "owned_paths": [
+        "src/caap/attack/synthesizer.py",
+        "src/caap/attack/placement.py",
+        "tests/unit/test_geometry.py",
+        "tests/unit/test_composite.py",
+        "reports/F12/**"
+      ],
+      "inputs": [
+        "F11 raw ROI 与模型边界",
+        "D/G/P/GP 能力契约"
+      ],
+      "outputs": [
+        "reports/F12/geometry-tests.json",
+        "reports/F12/render-contract.json"
+      ],
+      "acceptance": [
+        "正 tx 向右、正 ty 向下、scale>1 放大，placement 不双算；恒等与边界标记图通过",
+        "预乘 alpha 不重复相乘，白纹理软边不产生额外暗边",
+        "deploy-fixed 不调用 ASIT/attention/标签定位；无 ASIT 条件模式为 UNSUPPORTED_MODE 或队列 N/A"
+      ],
+      "evidence_for": [
+        "R1-4",
+        "R2-1",
+        "R2-4",
+        "R3-1",
+        "H1"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/03-attack-correctness.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F13",
+      "title": "完整形状面积可行性和三层支撑预算",
+      "phase": 5,
+      "depends_on": [
+        "F12"
+      ],
+      "owned_paths": [
+        "src/caap/attack/geometry_budget.py",
+        "src/caap/attack/controls.py",
+        "tests/unit/test_mask_budget.py",
+        "configs/protocols/geometry.json",
+        "runs/F13/**",
+        "reports/F13/**"
+      ],
+      "inputs": [
+        "F12 几何渲染",
+        "候选 B=784 与一侧 2% 公差"
+      ],
+      "outputs": [
+        "configs/protocols/geometry.json",
+        "reports/F13/feasibility.json",
+        "runs/F13/controls/"
+      ],
+      "acceptance": [
+        "B=759 的完整方形 2% 不超预算约束返回 BUDGET_INFEASIBLE，禁止删角凑面积",
+        "候选主形状全部在 [0.98B,B] 才冻结；legacy759 独立分组",
+        "同时输出 binary_area、bbox、周长、alpha_sum、alpha/实际变化支撑和裁剪比例；控制纹理不伪造训练"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R1-7",
+        "R2-4",
+        "H2",
+        "H5"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/03-attack-correctness.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F14",
+      "title": "分类攻击目标、有效样本及更新语义",
+      "phase": 6,
+      "depends_on": [
+        "F11",
+        "F13"
+      ],
+      "owned_paths": [
+        "src/caap/attack/attack.py",
+        "src/caap/attack/losses.py",
+        "src/caap/attack/classification.py",
+        "tests/unit/test_classification_objectives.py",
+        "tests/unit/test_training_updates.py",
+        "reports/F14/**"
+      ],
+      "inputs": [
+        "F11 模型适配",
+        "F13 合法 mask",
+        "F07 标签与目标规则"
+      ],
+      "outputs": [
+        "reports/F14/objective-tests.json",
+        "reports/F14/update-budget-tests.json"
+      ],
+      "acceptance": [
+        "未定向只以 clean-correct 为条件，定向另排真实目标类，目标必须有训练样本",
+        "优化梯度方向和 targeted/untargeted 事件由手算夹具证明；零有效样本不假造更新",
+        "EOT K 次损失取均值，尾批按有效样本权重，scheduler 与实际 optimizer step 对齐"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R2-4",
+        "R3-3"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/03-attack-correctness.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F15",
+      "title": "固定图库、干净校准与验证判决",
+      "phase": 4,
+      "depends_on": [
+        "F11",
+        "F07"
+      ],
+      "owned_paths": [
+        "src/caap/attack/verification.py",
+        "src/caap/tools/calibrate.py",
+        "src/caap/tools/eval_verification.py",
+        "tests/unit/test_verification.py",
+        "tests/unit/test_calibration_isolation.py",
+        "configs/protocols/verification.json",
+        "reports/F15/**"
+      ],
+      "inputs": [
+        "F07 gallery/calibration 角色",
+        "F11 稳定 embedding 接口"
+      ],
+      "outputs": [
+        "configs/protocols/verification.json",
+        "reports/F15/calibration-tests.json"
+      ],
+      "acceptance": [
+        "score>=tau 接受，阈值仅由干净 calibration 与固定 gallery 产生且不依赖 patch",
+        "掌级 genuine 与 subject 聚类分开；两掌不自动成为 genuine，重复 pair 和 gallery=probe 拒绝",
+        "全等、零范数、无 impostor、全拒绝端点和尾部不足输出确定状态，无 NaN/Infinity 或 logits 兜底"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R3-3",
+        "H3"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/03-attack-correctness.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F16",
+      "title": "验证专用本人拒绝与固定目标接受目标",
+      "phase": 7,
+      "depends_on": [
+        "F14",
+        "F15"
+      ],
+      "owned_paths": [
+        "src/caap/attack/verification_objectives.py",
+        "tests/unit/test_verification_objectives.py",
+        "configs/protocols/verification_attack.json",
+        "reports/F16/**"
+      ],
+      "inputs": [
+        "F14 训练更新契约",
+        "F15 冻结模板与判决",
+        "合法训练原型或明确授权的冻结模板；threshold_known 才可读固定阈值"
+      ],
+      "outputs": [
+        "configs/protocols/verification_attack.json",
+        "reports/F16/objective-tests.json"
+      ],
+      "acceptance": [
+        "本人拒绝最小化 cosine、目标接受最小化负 cosine，threshold_known 可用固定 tau hinge，二维梯度方向通过",
+        "所有模式禁止 calibration 图像/分数与 final_probe 优化；source_only 禁目标反馈；模板/阈值权限和 hash 入科学键",
+        "分类、拒绝、目标接受有独立 objective_id 与预算账本，选模仅 attack_dev/select，不能改写原分类 artifact"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R2-4",
+        "H3"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/04-evaluation-freeze.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F17",
+      "title": "分类退化、聚类统计、视觉和联合指标",
+      "phase": 7,
+      "depends_on": [
+        "F14",
+        "F15"
+      ],
+      "owned_paths": [
+        "src/caap/attack/evaluation.py",
+        "src/caap/attack/stats.py",
+        "src/caap/attack/visual_metrics.py",
+        "tests/unit/test_metrics.py",
+        "tests/unit/test_stats.py",
+        "tests/unit/test_visual_metrics.py",
+        "reports/F17/**"
+      ],
+      "inputs": [
+        "F14 分类事件",
+        "F15 pair/threshold 契约",
+        "F13 几何元数据"
+      ],
+      "outputs": [
+        "reports/F17/metric-tests.json",
+        "reports/F17/statistical-contract.json"
+      ],
+      "acceptance": [
+        "手算 ASR 为 2/3 与定向 1/1；n=0 为 null/INVALID_DENOMINATOR，池化 4/5 与 macro 1/2 分开",
+        "clean/adv 共用 draw，subject 整簇 bootstrap；验证 pair 两端 multiplicity 权重和固定目标规则正确",
+        "视觉 data_range=1，局部 bbox+3px 固定；PSNR 完美匹配 null，SSIM 与独立参考一致，TV 不含 mask 外边"
+      ],
+      "evidence_for": [
+        "R1-7",
+        "R2-2",
+        "R2-3",
+        "R2-5",
+        "R3-3",
+        "H1",
+        "H2",
+        "H3",
+        "H4"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/04-evaluation-freeze.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F18",
+      "title": "类型化产物、科学键与确定性恢复",
+      "phase": 8,
+      "depends_on": [
+        "F16",
+        "F17",
+        "F05"
+      ],
+      "owned_paths": [
+        "src/caap/runtime/artifacts.py",
+        "src/caap/runtime/scientific_key.py",
+        "src/caap/runtime/checkpoints.py",
+        "src/caap/runtime/runner_registry.py",
+        "src/caap/tools/eval_checkpoint.py",
+        "tests/unit/test_artifacts.py",
+        "tests/integration/test_resume.py",
+        "reports/F18/**"
+      ],
+      "inputs": [
+        "F05 状态恢复",
+        "F16/F17 科学参数",
+        "协议任务类型与父引用"
+      ],
+      "outputs": [
+        "reports/F18/artifact-schema.json",
+        "reports/F18/resume-tests.json",
+        "reports/F18/runner-contract.json"
+      ],
+      "acceptance": [
+        "task_id、scientific_key、run_id 分离；父 hash 未决不能领取；路径变化不改科学键而模型/模式/阈值依赖变化会改",
+        "calibrate/control/visual 无 optimizer 仍按类型通过；分类缺逐样本预测不能通过",
+        "连续 2 epoch 与 1+恢复+1 在声明环境一致；中途 batch 只从已验证 epoch 回退，父失效传播到报表",
+        "固定 runner_registry 和逐边阶段/产物绑定可校验；新增 train_recognizer/train_defense/certify/export_print/preprocess_capture/score_capture/run_original_attack 类型，不强造 optimizer；精度进科学键，GPU placement 不进键"
+      ],
+      "evidence_for": [
+        "R2-4"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/04-evaluation-freeze.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F19",
+      "title": "离线单测、GPU 回归与测试集封闭",
+      "phase": 9,
+      "depends_on": [
+        "F18"
+      ],
+      "owned_paths": [
+        "tests/integration/test_role_firewall.py",
+        "tests/regression/**",
+        "src/caap/runtime/test_gate.py",
+        "reports/F19/**"
+      ],
+      "inputs": [
+        "F11-F18 测试契约",
+        "F07 角色 manifest",
+        "F03 环境标定"
+      ],
+      "outputs": [
+        "reports/F19/test-gate.json",
+        "reports/F19/mutation-tests.json"
+      ],
+      "acceptance": [
+        "CPU 核心测试无网络、无真实生物数据；GPU/slow 缺资源明确 skip，不将 0 collected 视通过",
+        "反转几何、切断梯度、test-as-val、禁权重校验和错分母变异均被测试捕获",
+        "冻结前任务读取 test_probe 标签/分数触发访问拒绝；历史曝光保留，不伪称从未见过测试"
+      ],
+      "evidence_for": [
+        "R2-1",
+        "R2-3",
+        "R2-4",
+        "R3-1",
+        "R3-3"
+      ],
+      "capabilities": [
+        "cpu",
+        "gpu"
+      ],
+      "spec": "plan/slices/04-evaluation-freeze.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F20",
+      "title": "公平预算、有限自动搜索与全局分支冻结",
+      "phase": 12,
+      "depends_on": [
+        "F03",
+        "F05",
+        "F09",
+        "F10",
+        "F19",
+        "F23",
+        "F27"
+      ],
+      "owned_paths": [
+        "src/caap/tools/freeze_experiments.py",
+        "src/caap/tools/run_experiments.py",
+        "configs/protocols/full.json",
+        "configs/experiments/full.json",
+        "configs/experiments/search.json",
+        "tests/integration/test_freeze.py",
+        "runs/control/experiment_manifest.json",
+        "runs/control/dependency_bindings.json",
+        "runs/control/runner_registry.json",
+        "runs/F20/**",
+        "reports/F20/**",
+        "runs/control/execution_prerequisites.json"
+      ],
+      "inputs": [
+        "development/pilot 证据而非最终实验 ASR",
+        "reports/F09/registry-ready.json",
+        "各科学节点自身的 model-entry/clean gate/角色/feature/源选择配方；不要求其他域的资产齐全",
+        "F23 已实现直接基线和候选状态",
+        "F27 结构开发证据；F36/F39 仅各自分支先决，不阻塞数字主冻结",
+        "批准数字资源与独立确认安排；缺物理/认证预算只阻塞对应分支"
+      ],
+      "outputs": [
+        "configs/experiments/full.json",
+        "configs/experiments/search.json",
+        "runs/control/experiment_manifest.json",
+        "runs/control/dependency_bindings.json",
+        "runs/control/runner_registry.json",
+        "reports/F20/freeze.json",
+        "reports/F20/budget.json",
+        "runs/F20/",
+        "runs/control/execution_prerequisites.json"
+      ],
+      "acceptance": [
+        "候选/搜索域、最大 trial、seed、EOT、更新数、前后向/查询预算和停止规则在测试解封前冻结",
+        "selected_caap 与含 ASIT/RaS/预训练的 ablation_reference 分开，完整 2^3 和三特征状态不丢行；source-only 另用 selected_caap_by_source 或有无目标反馈证据的 a_priori_shared 配方，审计选择传递闭包",
+        "数字主freeze不等待F22/F36/F39；各分支独立freeze且禁前批final反馈；runner/阶段绑定/资产/许可/预算不齐禁止对应科学节点，full最终仍对全部缺口负责",
+        "F09 开发边绑定 registry-ready.json；Tongji 单元其余真实前提齐全而 AISEC 缺失时，Tongji 可领、AISEC 及其迁移 blocked、F43 full INCOMPLETE；补齐无关 registry 条目不改变已有节点局部键",
+        "execution_prerequisites 字段仅以 task_id/entry_hash 引用独立执行前提文件；开发边固定 requires_stage=development_done，不能以内嵌副本或 F09 整体状态替代局部门禁"
+      ],
+      "evidence_for": [
+        "R1-2",
+        "R1-7",
+        "R2-4",
+        "R2-5",
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "H5"
+      ],
+      "capabilities": [
+        "cpu",
+        "gpu",
+        "human"
+      ],
+      "spec": "plan/slices/04-evaluation-freeze.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F21",
+      "title": "相关工作全文、许可证和原实现能力核验",
+      "phase": 4,
+      "depends_on": [
+        "F06",
+        "F11"
+      ],
+      "owned_paths": [
+        "reports/F21/**",
+        ".local/literature/**"
+      ],
+      "inputs": [
+        "doc/03-创新点.md 候选书目",
+        "获准全文、官方代码和许可证",
+        "F06 资产规则"
+      ],
+      "outputs": [
+        "reports/F21/literature-ledger.json",
+        "reports/F21/original-capabilities.json"
+      ],
+      "acceptance": [
+        "CSPA、补丁/EOT、近期掌纹和认证文献分别记录书目/全文/实现核验等级及版本",
+        "逐项区分白盒/黑盒、单图/通用、目标、支撑和查询预算，不凭摘要补实现细节",
+        "未知 DOI、未获源码、访问受限有缺口记录；不得冒用第三方代码许可"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R1-2",
+        "R2-4",
+        "R3-4",
+        "H5"
+      ],
+      "capabilities": [
+        "network",
+        "human"
+      ],
+      "spec": "plan/slices/05-baselines-h1.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F22",
+      "title": "原能力协议下的独立基线复现",
+      "phase": 10,
+      "depends_on": [
+        "F21",
+        "F09",
+        "F19"
+      ],
+      "owned_paths": [
+        "src/caap/attack/baselines/original.py",
+        "configs/experiments/original_baselines.json",
+        "tests/integration/test_original_baselines.py",
+        "runs/F22/**",
+        "reports/F22/**"
+      ],
+      "inputs": [
+        "F21 原算法能力和合法实现",
+        "F09 真实模型",
+        "仅 development 数据与参考例"
+      ],
+      "outputs": [
+        "runs/F22/",
+        "reports/F22/reproduction-delta.json"
+      ],
+      "acceptance": [
+        "原实现锁定版本，在原能力约束下核对参考输出或记录无法复现原因",
+        "development 复现不读取本项目最终确认集；单图黑盒结果与通用白盒结果分表",
+        "未知原查询数不编预算；无法获得原实现时阻塞原复现而非用自写方法替名"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R2-4"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/05-baselines-h1.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F23",
+      "title": "共同约束下基线适配与 development pilot",
+      "phase": 11,
+      "depends_on": [
+        "F21",
+        "F10",
+        "F13",
+        "F14",
+        "F18",
+        "F19"
+      ],
+      "owned_paths": [
+        "src/caap/attack/baselines/matched.py",
+        "configs/experiments/development_baselines.json",
+        "tests/unit/test_matched_baselines.py",
+        "runs/F23/**",
+        "reports/F23/**"
+      ],
+      "inputs": [
+        "F21 能力与许可核验台账；F22 原代码缺失不阻塞独立匹配 EOT/PGD",
+        "F13 支撑预算",
+        "F14/F18 训练和产物",
+        "patch_train/attack_val"
+      ],
+      "outputs": [
+        "reports/F23/method-registry.json",
+        "reports/F23/pilot-costs.json",
+        "runs/F23/"
+      ],
+      "acceptance": [
+        "直接匹配十字 EOT/局部 PGD 可独立开发；特定 CSPA 适配仅能力/许可齐全时运行，缺项保留blocked，共用 evaluator 不冒名原作",
+        "数据、支撑、placement、梯度/查询和调参账本一致可核，固定更新与等计算比较分开",
+        "只用开发角色做有限候选及测时，pilot 不能生成确认性结论或依赖 F20/F24"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R1-2",
+        "R2-4",
+        "R2-5"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/05-baselines-h1.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F24",
+      "title": "三域七模型未定向与多目标分类主矩阵",
+      "phase": 13,
+      "depends_on": [
+        "F20"
+      ],
+      "owned_paths": [
+        "configs/experiments/F24-classification.json",
+        "runs/F24/**",
+        "reports/F24/**"
+      ],
+      "inputs": [
+        "F20 冻结方法、目标和预算",
+        "F09 三域七模型",
+        "F07 test_probe 与 F18 artifact"
+      ],
+      "outputs": [
+        "runs/F24/",
+        "reports/F24/classification-cells.json",
+        "reports/F24/coverage.json"
+      ],
+      "acceptance": [
+        "Tongji/IITD/AISEC×7 模型×冻结方法×3 seeds 的未定向及至少 3 合法目标全部对账",
+        "主读数 deploy-fixed；目标由训练/注册资产及固定 seed 选，不按测试成功率替换",
+        "逐样本 clean/adv、k/n、面积、成本和全部种子入库；低 ASR 合法完成，缺资产不填 0"
+      ],
+      "evidence_for": [
+        "R1-7",
+        "R2-1",
+        "R2-3",
+        "R2-4",
+        "R3-3"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/05-baselines-h1.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F25",
+      "title": "H1：D/G/P/GP 与 ASIT 训练测试拆分",
+      "phase": 13,
+      "depends_on": [
+        "F20"
+      ],
+      "owned_paths": [
+        "configs/experiments/F25-h1.json",
+        "runs/F25/**",
+        "reports/F25/**"
+      ],
+      "inputs": [
+        "F20 ablation_reference",
+        "F12 能力隔离",
+        "F17 配对统计"
+      ],
+      "outputs": [
+        "runs/F25/",
+        "reports/F25/h1-effects.json"
+      ],
+      "acceptance": [
+        "同 artifact、probe/draw/eligibility 比较 D/G/P/GP，并报告 G-D、P-D、GP-D 和交互",
+        "分别执行 scale=fixed_one/predicted，测量面积；不同面积不称严格等预算",
+        "有/无 ASIT 独立训练后均走 D；无 ASIT 的 G/P/GP 为预声明 N/A，不伪造恒等结果"
+      ],
+      "evidence_for": [
+        "R2-1",
+        "R2-5",
+        "R3-1",
+        "H1"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/05-baselines-h1.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F26",
+      "title": "完整 2^3 组件析因与三种特征对照",
+      "phase": 13,
+      "depends_on": [
+        "F20"
+      ],
+      "owned_paths": [
+        "configs/experiments/F26-factorial.json",
+        "runs/F26/**",
+        "reports/F26/**"
+      ],
+      "inputs": [
+        "F20 冻结 ablation_reference",
+        "F10 none/random/pretrained",
+        "F17 聚类与配对规则"
+      ],
+      "outputs": [
+        "runs/F26/",
+        "reports/F26/factorial-effects.json"
+      ],
+      "acceptance": [
+        "ASIT×RaS×特征开关八组合齐全，特征开启默认为 pretrained，并为每个 ASIT/RaS 组合另配 random",
+        "每行 base/overrides/compare_to 及完整配置 hash 可核；与主表同键才复用且不重复计 seed",
+        "主效应和全部可识别交互及无/随机/预训练差均保留，宽 CI 不等于无用或等效"
+      ],
+      "evidence_for": [
+        "R1-2",
+        "R2-5",
+        "H1",
+        "H4"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/06-mechanisms-verification.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F27",
+      "title": "独立线结构代理开发与设计可识别性",
+      "phase": 8,
+      "depends_on": [
+        "F13",
+        "F17"
+      ],
+      "owned_paths": [
+        "src/caap/attack/structure_features.py",
+        "src/caap/tools/analyze_structure.py",
+        "configs/protocols/structure.json",
+        "tests/unit/test_structure_features.py",
+        "tests/unit/test_structure_design.py",
+        "reports/F27/**"
+      ],
+      "inputs": [
+        "F13 几何描述量",
+        "训练/验证可视样本及非生物线条夹具",
+        "F17 统计接口"
+      ],
+      "outputs": [
+        "configs/protocols/structure.json",
+        "reports/F27/proxy-validation.json"
+      ],
+      "acceptance": [
+        "结构图与 victim checkpoint/标签/梯度无关；候选两尺度六方向滤波器参数开发阶段冻结",
+        "平坦图无信息，空/全 mask 覆盖为 0/约1；方向和旋转夹具符合声明误差",
+        "面积/跨度/周长共线时 INSUFFICIENT_DESIGN；不为显著性删协变量，不根据 test 选 mask"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R1-2",
+        "H2"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/06-mechanisms-verification.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F28",
+      "title": "H2：同面积、同跨度与预设方向对照",
+      "phase": 13,
+      "depends_on": [
+        "F20",
+        "F27"
+      ],
+      "owned_paths": [
+        "configs/experiments/F28-h2.json",
+        "runs/F28/**",
+        "reports/F28/**"
+      ],
+      "inputs": [
+        "F20 冻结模板和训练预算",
+        "F27 结构代理",
+        "F13 完整形状与控制"
+      ],
+      "outputs": [
+        "runs/F28/",
+        "reports/F28/h2-effects.json"
+      ],
+      "acceptance": [
+        "形状总效应、匹配跨度控制、预设方向干预分别列组，所有模板有可行性与未匹配变量说明",
+        "每种几何配常数灰度、白纸样、随机和学习纹理，不逐测试图选最高覆盖方向",
+        "配对样本/身份/模型/seed 和共享 artifact 相关性保留；无关联或优势消失不更换代理"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R1-2",
+        "R1-7",
+        "H2"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/06-mechanisms-verification.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F29",
+      "title": "大小、位置与软边独立敏感性",
+      "phase": 13,
+      "depends_on": [
+        "F20",
+        "F13"
+      ],
+      "owned_paths": [
+        "configs/experiments/F29-sensitivity.json",
+        "runs/F29/**",
+        "reports/F29/**"
+      ],
+      "inputs": [
+        "F20 预设因子水平",
+        "F12 渲染",
+        "F13 面积与 F17 视觉指标"
+      ],
+      "outputs": [
+        "runs/F29/",
+        "reports/F29/sensitivity.json"
+      ],
+      "acceptance": [
+        "大小、placement、软边分别改变或按预注册完整交互设计，不同时改多个因素后归单因",
+        "每级报告 nominal/binary/alpha/实际变化支撑和局部视觉指标，不以软边偷增预算",
+        "位置模板对全部测试图固定，裁剪失败保留；不可行级别在测试前阻塞而非事后换级"
+      ],
+      "evidence_for": [
+        "R1-7",
+        "R2-1",
+        "R2-4",
+        "H2"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/06-mechanisms-verification.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F30",
+      "title": "H3：分类与验证驱动攻击的联合风险",
+      "phase": 14,
+      "depends_on": [
+        "F20",
+        "F24",
+        "F16",
+        "F15"
+      ],
+      "owned_paths": [
+        "configs/experiments/F30-h3.json",
+        "runs/F30/**",
+        "reports/F30/**"
+      ],
+      "inputs": [
+        "F20 预注册三种目标和匹配预算",
+        "F24 已冻结分类 artifact",
+        "F15 独立 calibration",
+        "F16 验证目标"
+      ],
+      "outputs": [
+        "runs/F30/",
+        "reports/F30/joint-risk.json"
+      ],
+      "acceptance": [
+        "共用固定图库阈值，threshold_known 才可合法引用固定tau训练；不读校准图像/分数或final选模，source_only禁目标反馈",
+        "输出共同有效样本 2×2、clean/attack FMR/FNMR、全部合法目标对与 clean-rejected 条件接受率",
+        "低 FMR 支持度与两端聚类区间可审计；分类错不等同冒名接受，验证低风险不证明系统安全"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R3-3",
+        "H3"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/06-mechanisms-verification.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F31",
+      "title": "H4：RaS、K 与留出退化条件",
+      "phase": 13,
+      "depends_on": [
+        "F20"
+      ],
+      "owned_paths": [
+        "configs/experiments/F31-h4.json",
+        "runs/F31/**",
+        "reports/F31/**"
+      ],
+      "inputs": [
+        "F20 RaS/EOT/条件冻结",
+        "F17 配对 draw 指标"
+      ],
+      "outputs": [
+        "runs/F31/",
+        "reports/F31/h4-effects.json"
+      ],
+      "acceptance": [
+        "有/无 RaS、K=1/4 的固定更新与等计算比较分开登记并核对实际调用数",
+        "标称、分布内新 seed、留出变换类型及轻中重条件均冻结，clean/adv 共用 draw",
+        "记录退化 clean 准确率和两种 eligibility；OOD 数字结果不冒充实拍泛化"
+      ],
+      "evidence_for": [
+        "R2-5",
+        "R3-1",
+        "H4"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/07-transfer-defenses.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F32",
+      "title": "七模型完整非对角迁移",
+      "phase": 14,
+      "depends_on": [
+        "F24"
+      ],
+      "owned_paths": [
+        "configs/experiments/F32-transfer.json",
+        "runs/F32/**",
+        "reports/F32/**"
+      ],
+      "inputs": [
+        "F24 源 artifact",
+        "F20 冻结迁移矩阵",
+        "F09 目标有效识别器"
+      ],
+      "outputs": [
+        "runs/F32/",
+        "reports/F32/transfer-matrices.json"
+      ],
+      "acceptance": [
+        "每域 7×6 非对角 source→target 组合逐方法/seed 对账，不另训同一源 artifact",
+        "源训练与选择不访问目标输出/梯度/ASR，目标只在只读 evaluator 出现",
+        "目标 clean-correct 分母与源分母分开，缺模型或无分母不填 0，不展示仅有利目标"
+      ],
+      "evidence_for": [
+        "R2-4",
+        "R3-3"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/07-transfer-defenses.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F33",
+      "title": "集成留出与代表性新架构外推",
+      "phase": 13,
+      "depends_on": [
+        "F20",
+        "F09"
+      ],
+      "owned_paths": [
+        "src/caap/models/new_architecture.py",
+        "src/caap/attack/ensemble.py",
+        "configs/experiments/F33-ensemble.json",
+        "tests/unit/test_ensemble_holdout.py",
+        "runs/F33/**",
+        "reports/F33/**"
+      ],
+      "inputs": [
+        "F20 预设架构、留出集合、训练与搜索上限",
+        "F08 识别器设施",
+        "独立 development 与确认划分"
+      ],
+      "outputs": [
+        "runs/F33/",
+        "reports/F33/holdout-audit.json"
+      ],
+      "acceptance": [
+        "至少一个预注册代表性非同构新架构有真实有效权重，名称与实际实现一致",
+        "集成训练成员与留出模型不交，目标 logits/梯度 sentinel 在训练期不可调用",
+        "开发完成后独立分支 freeze 才解封确认集；架构或集成成员不按 F24/F32 最终结果挑选"
+      ],
+      "evidence_for": [
+        "R1-2",
+        "R2-4",
+        "R3-3",
+        "R3-4"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/07-transfer-defenses.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F34",
+      "title": "三域跨域固定补丁外推",
+      "phase": 14,
+      "depends_on": [
+        "F24"
+      ],
+      "owned_paths": [
+        "configs/experiments/F34-cross-domain.json",
+        "runs/F34/**",
+        "reports/F34/**"
+      ],
+      "inputs": [
+        "F24 源 artifact",
+        "F09 目标域有效模型",
+        "F20 跨域组合"
+      ],
+      "outputs": [
+        "runs/F34/",
+        "reports/F34/cross-domain.json"
+      ],
+      "acceptance": [
+        "3×2 有向域对在登记模型/方法/seed 上完整对账，源 patch 不用目标测试调优",
+        "目标域使用自有类别映射、图库和阈值，不把相同数字 class_id 当同一身份",
+        "默认跨域未定向；无合法共同身份不开展定向迁移，目标 clean 崩溃有无效原因"
+      ],
+      "evidence_for": [
+        "R2-3",
+        "R2-4",
+        "R3-3"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/07-transfer-defenses.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F35",
+      "title": "对抗训练防御：旧补丁与自适应独立确认",
+      "phase": 13,
+      "depends_on": [
+        "F20",
+        "F09",
+        "F23"
+      ],
+      "owned_paths": [
+        "src/caap/models/adversarial_training.py",
+        "src/caap/attack/adaptive_defense.py",
+        "configs/experiments/F35-adversarial-training.json",
+        "tests/integration/test_adaptive_training.py",
+        "runs/F35/**",
+        "reports/F35/**"
+      ],
+      "inputs": [
+        "F20 防御分支预注册上限",
+        "F23 development 补丁",
+        "独立防御开发/确认角色"
+      ],
+      "outputs": [
+        "runs/F35/",
+        "reports/F35/branch-freeze.json",
+        "reports/F35/adversarial-training.json"
+      ],
+      "acceptance": [
+        "阶段 A 仅 development 完成防御与攻击实现、预算选择；阶段 B 分支冻结后只评独立确认",
+        "防御模型只由合法识别器训练角色产生，冻结后分别测旧补丁与匹配威胁集合的重新优化自适应补丁",
+        "不能根据 F24 等最终结果反向设计防御；缺独立确认集阻塞确认结论，旧补丁低 ASR 不证明鲁棒"
+      ],
+      "evidence_for": [
+        "R2-4",
+        "R3-4",
+        "H5"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/07-transfer-defenses.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F36",
+      "title": "认证防御原实现与证明前提开发核验",
+      "phase": 10,
+      "depends_on": [
+        "F21",
+        "F19",
+        "F09"
+      ],
+      "owned_paths": [
+        "src/caap/attack/defenses/certified.py",
+        "configs/protocols/certified_defenses.json",
+        "tests/unit/test_certification_preconditions.py",
+        "runs/F36/**",
+        "reports/F36/**"
+      ],
+      "inputs": [
+        "F21 PatchCleanser/CertMask 全文与合法原代码",
+        "F09 真实模型",
+        "仅 development 数据"
+      ],
+      "outputs": [
+        "configs/protocols/certified_defenses.json",
+        "reports/F36/theorem-audit.json",
+        "reports/F36/development-freeze.json"
+      ],
+      "acceptance": [
+        "逐方法记录覆盖定理、攻击集合、预处理、base classifier 假设和证书算法实际版本",
+        "原参考例和小尺寸可枚举覆盖夹具通过；自写滑窗不标为原方法认证",
+        "只形成开发证据，不读取确认分数；前提未知或原代码缺失阻塞 H5 正式认证"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R2-4",
+        "R3-4",
+        "H5"
+      ],
+      "capabilities": [
+        "cpu",
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/08-certification-physical.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F37",
+      "title": "H5：范围内外认证覆盖与自适应攻击",
+      "phase": 13,
+      "depends_on": [
+        "F20",
+        "F36"
+      ],
+      "owned_paths": [
+        "configs/experiments/F37-h5.json",
+        "tests/integration/test_certification_scope.py",
+        "runs/F37/**",
+        "reports/F37/**"
+      ],
+      "inputs": [
+        "F36 前提核验与 development freeze",
+        "F20 全局冻结",
+        "独立认证确认 manifest"
+      ],
+      "outputs": [
+        "runs/F37/",
+        "reports/F37/branch-freeze.json",
+        "reports/F37/certification-scope.json"
+      ],
+      "acceptance": [
+        "先冻结防御参数、自适应算法和计算上限，再读取确认集；范围内外由真实支撑集合判定",
+        "同时报告 clean、certified accuracy/coverage、旧与自适应经验攻击及成本，不混证书与经验率",
+        "超范围成功不称击破认证；范围内获证样本若被破坏立即保全证据并独立复核前提"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R2-4",
+        "H5"
+      ],
+      "capabilities": [
+        "gpu",
+        "assets"
+      ],
+      "spec": "plan/slices/08-certification-physical.md",
+      "status": "planned",
+      "cost_class": "gpu"
+    },
+    {
+      "id": "F38",
+      "title": "历史真实拍摄原图与逐次映射恢复",
+      "phase": 3,
+      "depends_on": [
+        "F06",
+        "F07"
+      ],
+      "owned_paths": [
+        "src/caap/tools/recover_physical.py",
+        "tests/unit/test_physical_import.py",
+        ".local/physical/legacy/**",
+        "reports/F38/**"
+      ],
+      "inputs": [
+        "F06 获准旧实拍资产",
+        "原稿 400 张声称与真实可找回文件",
+        "原模型/打印物/时间顺序映射"
+      ],
+      "outputs": [
+        "reports/F38/legacy-capture-manifest.json",
+        "reports/F38/recovery-gaps.json"
+      ],
+      "acceptance": [
+        "capture 与 subject/palm/attempt/patch/model 可追溯，缺映射明确 unknown",
+        "黑白/RGB 和不同物体分开；原稿 9/10 不能反推逐次 success",
+        "无法找回的数据列缺口，不生成示例替代真实，不称物理审稿已解决"
+      ],
+      "evidence_for": [
+        "R2-2",
+        "R3-2"
+      ],
+      "capabilities": [
+        "cpu",
+        "assets",
+        "human"
+      ],
+      "spec": "plan/slices/08-certification-physical.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F39",
+      "title": "打印尺度标定、固定 ROI 与真实评分链",
+      "phase": 10,
+      "depends_on": [
+        "F13",
+        "F15",
+        "F19",
+        "F09"
+      ],
+      "owned_paths": [
+        "src/caap/tools/export_print.py",
+        "src/caap/tools/score_captures.py",
+        "src/caap/data/physical_roi.py",
+        "configs/protocols/printing.json",
+        "tests/unit/test_print_export.py",
+        "tests/integration/test_capture_scoring.py",
+        "runs/F39/**",
+        "reports/F39/**"
+      ],
+      "inputs": [
+        "F13 合法 development artifact",
+        "F09/F15 真实模型和评分规则",
+        "打印设备/材料与授权标定样本"
+      ],
+      "outputs": [
+        "configs/protocols/printing.json",
+        "reports/F39/print-calibration.json",
+        "reports/F39/roi-scoring-contract.json"
+      ],
+      "acceptance": [
+        "原始灰度、DPI、毫米面积、材料、设备、print_variant/hash 可重建，ROI 像素不直接称真实掌面积",
+        "实拍 ROI 固定预处理，不能数字重定位或重绘补丁以改善分数",
+        "捕获/ROI 失败保留；无 clean 配对不声称净攻击效应，评分不允许人工改 success"
+      ],
+      "evidence_for": [
+        "R2-1",
+        "R2-2",
+        "R3-2",
+        "H4"
+      ],
+      "capabilities": [
+        "cpu",
+        "assets",
+        "human"
+      ],
+      "spec": "plan/slices/08-certification-physical.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F40",
+      "title": "许可、精度导向样本量与多因素采集设计",
+      "phase": 13,
+      "depends_on": [
+        "F20",
+        "F39"
+      ],
+      "owned_paths": [
+        "configs/experiments/F40-physical-design.json",
+        "src/caap/tools/design_capture_schedule.py",
+        "tests/unit/test_capture_schedule.py",
+        ".local/consent/**",
+        "reports/F40/**"
+      ],
+      "inputs": [
+        "F20 物理分支范围与成本",
+        "F39 打印/ROI 标定",
+        "真实许可、设备和受试者安排"
+      ],
+      "outputs": [
+        "reports/F40/branch-freeze.json",
+        "reports/F40/power-precision-plan.json",
+        "reports/F40/capture-schedule.json"
+      ],
+      "acceptance": [
+        "记录受试者簇数、相关性假设、目标精度或功效、无效采集率及有限总人次，不把照片数当独立样本量",
+        "洁净、常数遮挡、匹配 EOT、reference、no_ras 五组必有；selected 不同则另组",
+        "设备/姿态/距离/光照/位置及重复、随机交错顺序测试前冻结，许可缺失不得拍摄"
+      ],
+      "evidence_for": [
+        "R2-2",
+        "R2-5",
+        "R3-2",
+        "H4"
+      ],
+      "capabilities": [
+        "cpu",
+        "human",
+        "assets"
+      ],
+      "spec": "plan/slices/08-certification-physical.md",
+      "status": "planned",
+      "cost_class": "human"
+    },
+    {
+      "id": "F41",
+      "title": "真人实施多设备多条件冻结拍摄",
+      "phase": 14,
+      "depends_on": [
+        "F40",
+        "F24",
+        "F26",
+        "F31"
+      ],
+      "owned_paths": [
+        ".local/physical/new/**",
+        "runs/F41/**",
+        "reports/F41/**"
+      ],
+      "inputs": [
+        "F40 许可和随机化日程",
+        "冻结主方法/reference/no_ras/基线 artifact",
+        "F39 打印物与固定评分"
+      ],
+      "outputs": [
+        "reports/F41/capture-manifest.json",
+        "reports/F41/protocol-deviations.json",
+        "runs/F41/"
+      ],
+      "acceptance": [
+        "由获准真人按冻结日程采集，Agent 不生成照片/受试者或擅自扩样",
+        "每次记录 capture、匿名 subject/palm、顺序、session、设备、距离/姿态/光照/位置、patch 与 clean 配对",
+        "失败尝试、退出和偏离全部保留；看到结果后不换打印物、条件或增加人数直到显著"
+      ],
+      "evidence_for": [
+        "R2-2",
+        "R2-5",
+        "R3-2",
+        "H4"
+      ],
+      "capabilities": [
+        "human",
+        "assets"
+      ],
+      "spec": "plan/slices/09-confirmation-delivery.md",
+      "status": "planned",
+      "cost_class": "human"
+    },
+    {
+      "id": "F42",
+      "title": "真实逐次物理统计与模块消融",
+      "phase": 15,
+      "depends_on": [
+        "F41",
+        "F38",
+        "F17"
+      ],
+      "owned_paths": [
+        "src/caap/tools/physical_report.py",
+        "tests/unit/test_physical_report.py",
+        "runs/F42/**",
+        "reports/F42/**"
+      ],
+      "inputs": [
+        "F41 新逐次真实记录",
+        "F38 历史可追溯记录",
+        "F17 聚类统计"
+      ],
+      "outputs": [
+        "runs/F42/",
+        "reports/F42/physical-results.json",
+        "reports/F42/physical-coverage.json"
+      ],
+      "acceptance": [
+        "单次 micro、每人 macro/k/n、受试者区间与实际顺序 ASR@1/5/20 分开，缺顺序或次数不足为 null",
+        "第 20 次才成功的夹具前1/5为0前20为1，random_subset_success_at_1 为0.05而非顺序结果",
+        "模型/模式/目标/物体/条件不串组；新旧证据分表，无 RaS 纯单因子对照才支撑物理消融"
+      ],
+      "evidence_for": [
+        "R2-2",
+        "R2-5",
+        "R3-2",
+        "H4"
+      ],
+      "capabilities": [
+        "cpu",
+        "assets"
+      ],
+      "spec": "plan/slices/09-confirmation-delivery.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F43",
+      "title": "full 矩阵、负结果与证据依赖对账",
+      "phase": 16,
+      "depends_on": [
+        "F22",
+        "F24",
+        "F25",
+        "F26",
+        "F28",
+        "F29",
+        "F30",
+        "F31",
+        "F32",
+        "F33",
+        "F34",
+        "F35",
+        "F37",
+        "F42"
+      ],
+      "owned_paths": [
+        "src/caap/tools/collect_tables.py",
+        "tests/integration/test_full_evidence.py",
+        "reports/F43/**"
+      ],
+      "inputs": [
+        "F20 完整 expected_cells",
+        "所有科学分支有效 artifact 与 branch freeze",
+        "每次真实预算和失效记录"
+      ],
+      "outputs": [
+        "reports/F43/coverage.json",
+        "reports/F43/tables/",
+        "reports/F43/claims.json",
+        "reports/F43/resource-ledger.json"
+      ],
+      "acceptance": [
+        "缺必需 seed/资产/分支、失效父输入、非法预算或 synthetic 冒充 real 使报告 INCOMPLETE 且非零退出",
+        "同键只选经验证有效实例不挑最大 ASR，重试不增 seed；合法生成纹理的真实评价可入控制行",
+        "每数值追到样本/pair/capture 与当前协议；所有阴性、null、N/A、失败和取消有原因，full 缺口不能标 READY"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R1-2",
+        "R1-7",
+        "R2-1",
+        "R2-2",
+        "R2-3",
+        "R2-4",
+        "R2-5",
+        "R3-1",
+        "R3-2",
+        "R3-3",
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "H5"
+      ],
+      "capabilities": [
+        "cpu"
+      ],
+      "spec": "plan/slices/09-confirmation-delivery.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    },
+    {
+      "id": "F44",
+      "title": "稿件修订、16 条逐点回复与诚实主张",
+      "phase": 17,
+      "depends_on": [
+        "F43",
+        "F21"
+      ],
+      "owned_paths": [
+        "paper/revision/**",
+        "reports/F44/**"
+      ],
+      "inputs": [
+        "F43 可追溯证据及缺口",
+        "F21 已核验书目",
+        "合法稿件源码与投稿规范"
+      ],
+      "outputs": [
+        "reports/F44/reviewer-map.json",
+        "reports/F44/response-letter.md",
+        "reports/F44/claim-diff.json",
+        "paper/revision/"
+      ],
+      "acceptance": [
+        "R1-1..7/R2-1..5/R3-1..4 每条包含修改、证据、页节、限制和真实解决状态",
+        "phi 参数、c/b 头与边界、图1、符号表、首次缩写展开、形状选择和十字归属全部逐项核对",
+        "负结果对应收缩主张；无源码不称已编译，无物理证据不称完全解决，不自动提交投稿"
+      ],
+      "evidence_for": [
+        "R1-1",
+        "R1-2",
+        "R1-3",
+        "R1-4",
+        "R1-5",
+        "R1-6",
+        "R1-7",
+        "R2-1",
+        "R2-2",
+        "R2-3",
+        "R2-4",
+        "R2-5",
+        "R3-1",
+        "R3-2",
+        "R3-3",
+        "R3-4",
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "H5"
+      ],
+      "capabilities": [
+        "cpu",
+        "human",
+        "latex"
+      ],
+      "spec": "plan/slices/09-confirmation-delivery.md",
+      "status": "planned",
+      "cost_class": "mixed"
+    },
+    {
+      "id": "F45",
+      "title": "干净环境重建与可恢复最终交接",
+      "phase": 18,
+      "depends_on": [
+        "F44",
+        "F05"
+      ],
+      "owned_paths": [
+        "src/caap/tools/rebuild_audit.py",
+        "tests/integration/test_clean_rebuild.py",
+        "reports/F45/**"
+      ],
+      "inputs": [
+        "批准 commit/补充快照、依赖锁",
+        "F43/F44 结果与稿件",
+        "合法私有资产恢复引用",
+        "runs/control 接力状态"
+      ],
+      "outputs": [
+        "reports/F45/rebuild.json",
+        "reports/F45/handoff.json",
+        "reports/F45/unresolved.json"
+      ],
+      "acceptance": [
+        "新的获准干净工作区可导入、运行离线测试、解析 full DAG 并用已有可信原始记录重建相同表格",
+        "缺 .local 资产能定位合法补给路径而不泄露或假造；干净 clone 不依赖个人绝对路径",
+        "分别列代码实现/测试/真实实验/论文状态、资源消耗、负结果、阻塞和唯一续跑入口，不自动 commit/push/提交"
+      ],
+      "evidence_for": [
+        "R2-4"
+      ],
+      "capabilities": [
+        "cpu",
+        "git",
+        "assets"
+      ],
+      "spec": "plan/slices/09-confirmation-delivery.md",
+      "status": "planned",
+      "cost_class": "cpu"
+    }
+  ]
+}

@@ -17,5 +17,18 @@ node_modules/
 .netrc
 .pypirc
 
-# Git's nested metadata is retained locally, not archived.
-# Project PDFs, model checkpoints, data artifacts, doc/ and plan/ are included.
+# Machine-local assets, preserved upstream checkout, and new run outputs
+.local/
+runs/
+reports/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+
+# Temporary collaboration state; other .codebuddy project data is not a cache
+.codebuddy/teams/
+
+# Original paper materials and frozen legacy artifacts remain tracked.
+# Publish selected new evidence only after an explicit provenance/privacy review.

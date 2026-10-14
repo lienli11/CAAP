@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "caap-research"
+version = "0.2.0"
+description = "Reproducible CAAP research workspace and experiment planning tools"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+dependencies = []
+
+[project.optional-dependencies]
+research = [
+    "torch>=2.5,<3",
+    "torchvision>=0.20,<1",
+    "numpy>=1.26,<3",
+    "Pillow>=10,<13",
+    "tqdm>=4.66,<5",
+]
+
+[project.scripts]
+caap = "caap.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["caap*"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}

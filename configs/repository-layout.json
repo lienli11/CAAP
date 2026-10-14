@@ -1,0 +1,20 @@
+{
+  "schema_version": "caap.layout.v1",
+  "root_files": ["README.md", "AGENTS.md", "LICENSE", ".gitignore", ".gitattributes", "pyproject.toml"],
+  "maintained_directories": ["src", "tests", "doc", "plan", "configs", "paper", "archive", ".github"],
+  "local_only_directories": [".git", ".local", ".venv", "venv", "runs", "reports", "build", "dist", ".pytest_cache", ".mypy_cache", ".ruff_cache", "__pycache__", ".codebuddy", ".cursor", ".fitspec"],
+  "source_package": "src/caap",
+  "human_documentation": "doc",
+  "agent_specifications": "plan",
+  "task_manifest": "plan/tasks.json",
+  "frozen_evidence": ["paper/sources", "archive/legacy"],
+  "new_outputs": ["runs", "reports"],
+  "private_assets": ".local",
+  "rules": [
+    "No production Python scripts at repository root; use installed caap commands.",
+    "No generated run outputs or private datasets under src, doc, plan, or configs.",
+    "Do not mutate frozen legacy records; create a new run with provenance.",
+    "Changing a directory role requires updating this registry and the root guide.",
+    "Never commit nested Git metadata, machine environments, credentials, or restricted biometric samples."
+  ]
+}

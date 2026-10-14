@@ -1,0 +1,400 @@
+{
+  "schema_version": "caap.migration.v1",
+  "baseline_commit": "278e3715823615b1f57c7037cba8aff7f2ca45ac",
+  "upstream_repository": "https://github.com/ryliu68/CAAP",
+  "upstream_head": "6a805f8710d742635a03a3cad9d4fdbac038b80b",
+  "upstream_worktree_dirty": true,
+  "legacy_artifacts": {
+    "evidence_type": "synthetic_or_example",
+    "historical_record": true,
+    "replay_supported": false,
+    "original_effective_cwd": "CAAP_code",
+    "known_issues": "Legacy configs are output records, not executable v2 configs; original run source hash is unknown."
+  },
+  "local_checkout": ".local/upstream/CAAP_code",
+  "records": [
+    {
+      "old_path": ".gitignore",
+      "sha256": "adaaa084c8f1c4339a815d66aa927305ebc859ef90a08762b56210bcd1b35702",
+      "kind": "file",
+      "new_path": ".gitignore",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "8d394cc2-dae5-4e0a-8bcc-8a053465a475 (1).pdf",
+      "sha256": "0081b6ebae2429e3aff513567c0f4af45ee058d194ca373b0f7af208df01d0d0",
+      "kind": "file",
+      "new_path": "paper/sources/manuscript.pdf",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "CAAP-Major.pdf",
+      "sha256": "380cb7922057544417d85d4d9ad892a618ddd83b40eb1f2478ca604c81744a42",
+      "kind": "file",
+      "new_path": "paper/sources/review-letter.pdf",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "CAAP_code/.gitignore",
+      "sha256": "dc4ea8fac9d7f3179a54f3015b5f305a37e8674d4ff928e595250f7c505d9ef0",
+      "kind": "file",
+      "new_path": "archive/legacy/upstream/.gitignore",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "CAAP_code/LICENSE",
+      "sha256": "7082d520f7a22434f10c6c7e562630730320811c72c048baa1d7f3ca3e187083",
+      "kind": "file",
+      "new_path": "LICENSE",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "CAAP_code/README.md",
+      "sha256": "dcc6722d9e61df683aac3d7b83d246f56b1eba3cb42b95c9b99e755c292a9202",
+      "kind": "file",
+      "new_path": "archive/legacy/upstream/README.md",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "CAAP_code/attack/__init__.py",
+      "sha256": "b02cc4d285b252c4fcd31e7aaa20a3a91a68efb3c64089c818359b25f4b71a1c",
+      "kind": "file",
+      "new_path": "src/caap/attack/__init__.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/attack/attack.py",
+      "sha256": "dd63aa1d8105ff8655681de4ad2aaeedb2e67f66ef14046083fef5b29705da6f",
+      "kind": "file",
+      "new_path": "src/caap/attack/attack.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/attack/losses.py",
+      "sha256": "6ab90c8509bae56c7266820a9fde63afac8e52b02ccfae7287b0ce5f3e619892",
+      "kind": "file",
+      "new_path": "src/caap/attack/losses.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/attack/main.py",
+      "sha256": "7dbe36b1aef1ef3d89f4ace4eed4aff2fe07d6e2e8f470ec3cc525052954d6c6",
+      "kind": "file",
+      "new_path": "src/caap/attack/main.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/attack/modules.py",
+      "sha256": "9e731fd59eee87c3fa04bec4603b330ed54e82abccb4b6dfb6138b8baed9e6b3",
+      "kind": "file",
+      "new_path": "src/caap/attack/modules.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/attack/stats.py",
+      "sha256": "646cbcce8bce433a8095c145de09e8052be878f1ddcbdc3c09336078c337b191",
+      "kind": "file",
+      "new_path": "src/caap/attack/stats.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/attack/synthesizer.py",
+      "sha256": "44e54e3d3b46e89020c1eac7c7c7ea47412bf10ec44f931a0c075fcf9ee48b0a",
+      "kind": "file",
+      "new_path": "src/caap/attack/synthesizer.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/attack/utils.py",
+      "sha256": "533dd99a0e79474401e17566b6c430efb120e7f5af83a73ed55984e16dc6cf10",
+      "kind": "file",
+      "new_path": "src/caap/attack/utils.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/ckpt/aug_0.5",
+      "kind": "symlink",
+      "target": "/home/renyang/jiale/Palmprint_Attack_UAP/ckpt/aug_0.5/",
+      "action": "preserved_local_only"
+    },
+    {
+      "old_path": "CAAP_code/data/__init__.py",
+      "sha256": "11069f86928fde6b155fe23085ac8aa5818f5a290abf496d73a71937ba5b68b7",
+      "kind": "file",
+      "new_path": "src/caap/data/__init__.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/data/data.py",
+      "sha256": "55ff743979015ef20cde2a764c788e5c72b9d7f73c9ff49ddc7cf51f2698285f",
+      "kind": "file",
+      "new_path": "src/caap/data/data.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/data_pth",
+      "kind": "symlink",
+      "target": "/home/renyang/jiale/Palmprint_Attack_UAP/data_pth",
+      "action": "preserved_local_only"
+    },
+    {
+      "old_path": "CAAP_code/environment.yaml",
+      "sha256": "8161867d5bc9e5ef4f558ff47fd24647101469772c00bad9d9cfce9ab0d64b5f",
+      "kind": "file",
+      "new_path": "archive/legacy/upstream/environment.yaml",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "CAAP_code/models/__init__.py",
+      "sha256": "7dfb4cc64271dbdc866188a5ef930e9319980e020add341d2eace40e0a8d2a45",
+      "kind": "file",
+      "new_path": "src/caap/models/__init__.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/models/ccnet.py",
+      "sha256": "73dfe03bc420a19c80a6054e8ad1b7f003e91cbfa4991de1968ef950e969b0ba",
+      "kind": "file",
+      "new_path": "src/caap/models/ccnet.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/models/co3net.py",
+      "sha256": "39cb598715e41e00dd3af7a5db1e8127d82eaf8e6020680530583db775cb7db8",
+      "kind": "file",
+      "new_path": "src/caap/models/co3net.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/models/compnet.py",
+      "sha256": "d0262c11029a4689e583e52c4222aa47522315873eb3950fa2bb13fafcf3694e",
+      "kind": "file",
+      "new_path": "src/caap/models/compnet.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/models/mobilenet_v2.py",
+      "sha256": "e79463929e15a3e9ede3668629069484358224da141937b12a99d8f70381ae60",
+      "kind": "file",
+      "new_path": "src/caap/models/mobilenet_v2.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/models/resnet.py",
+      "sha256": "88cf1ec898ae1b54a8cb95f9cdffb69a75bcef8a9a26a1622a644ac8abc84a75",
+      "kind": "file",
+      "new_path": "src/caap/models/resnet.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/models/shufflenetv2.py",
+      "sha256": "514ddc73eb191370dc99e3f40568252f7cfddb45ada6def36a9d27a636405b4d",
+      "kind": "file",
+      "new_path": "src/caap/models/shufflenetv2.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/models/vgg.py",
+      "sha256": "a7f4f7dfd69c8af0167823a77531b500a237fd5b6ebdb48a44160caef33ca8eb",
+      "kind": "file",
+      "new_path": "src/caap/models/vgg.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/run_attack_train.sh",
+      "sha256": "84230e93029851e2bef4bea917238e99615fdfe477731f273c61894b32b2a46a",
+      "kind": "file",
+      "new_path": "archive/legacy/upstream/run_attack_train.sh",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "CAAP_code/tools/physical_report.py",
+      "sha256": "908f424e80d71f762c34c15b68c97795af8bb09a9b4ffe416b35c1e6c861779e",
+      "kind": "file",
+      "new_path": "src/caap/tools/physical_report.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/tools/pretrain_ms_dife.py",
+      "sha256": "5d0eded375dadf4ad08ed133dac70d66cc7de44e0ec815afbf52fd075a91dfee",
+      "kind": "file",
+      "new_path": "src/caap/tools/pretrain_ms_dife.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/utils/__init__.py",
+      "sha256": "5f5eb13651b587dfe0b9091577be83383a2a9f09b088e6624ce1a5b1552d11df",
+      "kind": "file",
+      "new_path": "src/caap/utils/__init__.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "CAAP_code/utils/net_factory.py",
+      "sha256": "1e7494b8441ae52e9142ff690ecc13ca0a02b5154bdcc3d23b0b00b2980d27b3",
+      "kind": "file",
+      "new_path": "src/caap/utils/net_factory.py",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "caap_revision/REVISION_PLAYBOOK.md",
+      "sha256": "5cbaf4276067e4f6f88efecec314febc1005fb813188f670ec7831764edbe556",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/REVISION_PLAYBOOK.md",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/make_synth_data.py",
+      "sha256": "8cd114e5689c4d80e4b1c4074d214b9ee4ab3e2e3fe24adcb2cf42796d8cbbf3",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/make_synth_data.py",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/physical_example.csv",
+      "sha256": "812d57d9e5933b82d53ca685d0e53e695cf3c56ca46eab634ce22691f53a76e7",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/physical_example.csv",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/best_asit.pth",
+      "sha256": "043e54fa04cbd3aae5e9eb260587f8b9da9acb1f72acbab75d554eadfca019cf",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/best_asit.pth",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/best_patch.png",
+      "sha256": "5e857575c95336f70e94d1fd3920fba2732ac4dc79a10f2301f1b4a768ddd986",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/best_patch.png",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/best_patch.pth",
+      "sha256": "4ee5c672fdf78c61b61de555ff4424f3944ed7670c50dce91f2a75a808f690c7",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/best_patch.pth",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/config.json",
+      "sha256": "dda9f0d864a4084f89c56421ea51ed23d80c0faee95cdd9b56e18354be6d0814",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/config.json",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/metrics.json",
+      "sha256": "c1b48c6b2fc90e52e8d2236571bd53440ab12da6e602cf14a487543eaafde045",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/metrics.json",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/vis_epoch_1.png",
+      "sha256": "3da58c33a6a1015a88d5e455ab1ad7eca5397acb021c6331046fa2828a813129",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/smoke/tongji_compnet_untargeted_cross30_s42/vis_epoch_1.png",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/synth/ckpt/compnet.pth",
+      "sha256": "158ba89619bc50dce30403abded24c9bbc63afcad31d919d2e6a8f3241e06198",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/synth/ckpt/compnet.pth",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/synth/ckpt/resnet18.pth",
+      "sha256": "b53bfa68aefed5c3dcacfedb2dd447450a807149599ceb015166d978195e10d1",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/synth/ckpt/resnet18.pth",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "caap_revision/synth/data_pth/synth_128.pth",
+      "sha256": "fda21c6a638196c1dc8f83db25aa1d41aa907c8a0f22cda4294ac363873bf9c5",
+      "kind": "file",
+      "new_path": "archive/legacy/caap_revision/synth/data_pth/synth_128.pth",
+      "migration_policy": "frozen_bytes"
+    },
+    {
+      "old_path": "doc/01-论文讲解.md",
+      "sha256": "3b7a02bf79d42d73cf65439019b6f7b7ff766bb69b31d3ee8c3c285b2f2fed17",
+      "kind": "file",
+      "new_path": "doc/01-论文讲解.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "doc/02-审稿意见.md",
+      "sha256": "1d90f388db0c20d55370e861c21d7babaa4c9da401c0fed2db3f53328cca787b",
+      "kind": "file",
+      "new_path": "doc/02-审稿意见.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "doc/03-创新点.md",
+      "sha256": "6f0ac188bf1e02f8f63953ab88b81575757919b8f37c88a7f733fdb04f729e80",
+      "kind": "file",
+      "new_path": "doc/03-创新点.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "doc/04-三周计划.md",
+      "sha256": "65da635d583be835ee9cd6f0c629789ef0e964ffce70563489d4db0858b10333",
+      "kind": "file",
+      "new_path": "doc/04-三周计划.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "doc/05-创新点深化.md",
+      "sha256": "f258daea1d7c3f1aa7342e62e8bf28ad0d8e557a19c18c09c772102e655be562",
+      "kind": "file",
+      "new_path": "doc/05-创新点深化.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "doc/README.md",
+      "sha256": "696d63cf63f44f0e9009c88cbb7d90509bfc0defc112524bcfc77897bd08678b",
+      "kind": "file",
+      "new_path": "doc/README.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "plan/01-协议与产物契约.md",
+      "sha256": "3124bb4e0f208ade77b9728bf860d7fb08396af76776e76c6204d47da57b93aa",
+      "kind": "file",
+      "new_path": "plan/01-协议与产物契约.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "plan/02-开发切片与验收.md",
+      "sha256": "3bcb07586a0ec6f209396b21ad587ce68ab739ede0b958f41aeea867a89336e7",
+      "kind": "file",
+      "new_path": "plan/02-开发切片与验收.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "plan/03-实验矩阵与判定.md",
+      "sha256": "bb867f833749f436d3d7d5091e10e63ec86185946e578d77a917341bac72864a",
+      "kind": "file",
+      "new_path": "plan/03-实验矩阵与判定.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "plan/04-Agent自治与恢复.md",
+      "sha256": "a5da3ebc6230f894529115bd920f365502862480f413fa80560f265042b9bc06",
+      "kind": "file",
+      "new_path": "plan/04-Agent自治与恢复.md",
+      "migration_policy": "maintained"
+    },
+    {
+      "old_path": "plan/README.md",
+      "sha256": "b39ab1cc1529242ab9c6f25a0def35184e2e560f2f3c91183274bd0c5cc3ae27",
+      "kind": "file",
+      "new_path": "plan/README.md",
+      "migration_policy": "maintained"
+    }
+  ]
+}

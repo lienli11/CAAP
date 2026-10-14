@@ -1,0 +1,46 @@
+{
+  "schema_version": "caap.profile.v2",
+  "profile": "full",
+  "plan_version": "caap-full-v2",
+  "executable": false,
+  "status": "template_requires_implementation_assets_and_freeze",
+  "task_manifest": "plan/tasks.json",
+  "datasets": ["tongji", "iitd", "aisec"],
+  "models": ["compnet", "ccnet", "co3net", "resnet18", "vgg16", "mobilenetv2", "shufflenetv2"],
+  "train_seeds": [0, 1, 42],
+  "classification_objectives": ["untargeted", "targeted"],
+  "verification_objectives": ["genuine_rejection", "target_acceptance"],
+  "target_count_per_supported_domain": 3,
+  "hypotheses": ["H1", "H2", "H3", "H4", "H5"],
+  "initial_area_budget_px": 784,
+  "area_relative_tolerance": 0.02,
+  "patch_must_not_exceed_budget": true,
+  "default_parallelism": "one_validated_job_per_authorized_gpu_or_mig_allocation",
+  "resource_policy": {
+    "authorized_gpu_uuids": null,
+    "total_gpu_hours": null,
+    "wall_time_hours": null,
+    "storage_gib": null,
+    "max_concurrent_jobs": null,
+    "require_explicit_allocation": true,
+    "allow_unvalidated_ddp": false
+  },
+  "search_policy": {
+    "data_role": "development_only",
+    "search_space": null,
+    "max_trials_per_method": null,
+    "confirmation_set_required": true,
+    "allow_test_driven_search": false
+  },
+  "physical_policy": {
+    "required_factors": ["device", "pose", "distance", "illumination", "placement"],
+    "consent_reference": null,
+    "capture_manifest": null,
+    "human_execution_required": true
+  },
+  "completion_policy": {
+    "negative_results_are_valid": true,
+    "blocked_is_not_complete": true,
+    "cancelled_scope_is_not_original_full_complete": true
+  }
+}

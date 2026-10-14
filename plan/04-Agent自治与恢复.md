@@ -4,7 +4,7 @@
 
 ## 1. 授权边界
 
-收到用户明确的执行任务后，在已批准工作区、依赖环境和资源预算内，Agent 可自行：
+**本轮仅迁移与自检；本文件的科研队列、租约、自动恢复是 future 合同。** 后续实现并通过门禁，且收到用户明确执行任务后，在已批准工作区、依赖环境和资源预算内，Agent 可自行：
 
 - 读取和修改切片允许的源码与测试。
 - 生成匿名合成测试夹具、执行离线单测与集成测试。
@@ -18,17 +18,46 @@
 
 ## 2. 可恢复状态与日志
 
-未来执行时创建 `caap_revision/execution/`，当前文档交付不伪造完成台账。
+未来控制状态位于 `runs/control/`，运行产物位于 `runs/<F任务ID>/<run_id>/`，报告位于 `reports/`。F ID 只用于 owner/group 与写入权限分组，task_id/scientific_key 标识具体科学节点；当前自检可写自身报告，但不伪造科研任务完成台账。
 
-`state.json` 至少包含：`plan_version,protocol_hash,workspace_snapshot,active_slice,tasks,runs,budget,open_decisions,last_verified_artifact`。
+`state.json` 至少包含：`plan_version,protocol_hash,workspace_snapshot,active_slice,tasks,runs,budget,open_decisions,last_verified_artifact,controller_epoch,allocation_snapshot`。
 
-开发切片 task 至少包含：`id,status,owner,dependencies,allowed_paths,attempt_count,evidence_paths,last_error,next_action`。实验节点另外使用协议契约 §7 的 `task_type/input_refs/scientific_key/expected_outputs`，每次尝试有不同 run_id；不以切片 ID 或输出目录名替代科学键。
+开发任务至少包含 `id,development_status,owner,dependencies,allowed_paths,attempt_count,evidence_paths,last_error,next_action`。计算节点另外使用 `execution_status,task_type,input_refs,scientific_key,expected_outputs,lease_id,fencing_token`；每次尝试有不同 run_id。`plan/tasks.json` 保持严格 `caap.tasks.v2` schema：F DAG 表达开发/证据组织关系，不是已经展开和获准的科学执行 DAG。
+
+F18/F20 在 `runs/control/` 生成并审查三个 **future** 文件，当前不伪造它们已实现：
+
+| **文件** | **必要绑定** | **执行门禁** |
+| --- | --- | --- |
+| `runner_registry.json` | registry版本/hash；每 task_type 的固定 entrypoint/argv 模板、输入/输出 schema、状态/恢复合同、所需能力和允许路径 | 所有科学节点必须有经过代码审查的类型映射；未知/未映射类型拒执行 |
+| `execution_prerequisites.json` | 按科学 task_id 登记 F owner、development 证据 hash、对应数据/model-entry、角色/clean gate、feature/recipe/branch freeze、许可/预算；科学父输出绑定 task_id/output_name/type/hash/role 且要求 SUCCEEDED | 科学节点字段固定为 `execution_prerequisites={task_id,entry_hash}`，仅引用本文件同 task_id 的条目及其内容 hash；不内嵌第二份前提；缺项只阻塞该节点及依赖后代 |
+| `dependency_bindings.json` | 每 F 开发边固定字段 `parent_id/child_id/requires_stage/artifact_refs/artifact_hashes`，`requires_stage=development_done` | 静态 depends_on 统一是开发验收依赖；不能凭 development_done 推断真实实验通过，科学前提另由上一文件校验 |
+
+冻结的 `experiment_manifest.json` 引用三文件 hash 与具体科学节点/expected_cells。dry-run 检查绑定完整、无环、类型相容、目标反馈闭包和前提，但不执行任意配置代码、不生成 SUCCEEDED。F20 不依赖认证/旧实拍恢复才能做数字冻结；原法/物理缺口依然进入 full 最终 evidence gate。
+
+实现验收通过只提升 development 状态，真实资产、洁净基线、冻结协议、权限/预算全部通过后才可进入计算 `PENDING`。计算完成也不能自动把论文写作/采集条目改为完成。
 
 训练、校准、评估、分析、物理报告与汇总均纳入同一依赖图和状态机。无 ASIT 等预声明能力缺失为 NOT_APPLICABLE；数据暂缺为 BLOCKED_ASSET。只有已校验、未失效且科学键匹配的输出可以复用。运行预算按真实尝试累加，统计 seed 数按科学单元计算，重试不增加独立样本。
 
 追加 `events.jsonl` 记录：开始、命令及退出码、修复原因、测试摘要、状态转换、重试、失效传播、决策。日志不含令牌、真实姓名、邮件或不必要的图像内容。
 
-状态原子写入，任务领取使用互斥/租约。控制 Agent 重启先核查活动进程与已有产物，不把过期 RUNNING 直接当失败重开，不双重占用同 GPU。
+状态原子写入，任务领取使用互斥/租约。控制 Agent 重启先核查活动进程、Slurm job、租约和已有产物，不把过期 RUNNING 直接当失败重开，不双重占用同 GPU。
+
+future 状态机的正常链路为 `PENDING → READY → LEASED → RUNNING → VALIDATING → SUCCEEDED`。失败转 `RETRYABLE/FAILED_TECHNICAL/BLOCKED_ASSET/BLOCKED_PERMISSION`；受影响节点转 `INVALIDATED`，范围变更转 `CANCELLED_SCOPE`，经审计不适用转 `NOT_APPLICABLE`。ready 要求父输出类型/hash、门禁、预算均通过；进程退出 0 仅进入 VALIDATING，不能直接 SUCCEEDED。
+
+同一状态转换以 task 版本的 compare-and-swap/事务完成。run 创建、占用预算和领取资源须可审计，恢复时处理尚未完成的事务；原子重命名只保证单文件发布，不等于多资源事务或多 writer 安全。
+
+每个物理 GPU 或获准 MIG 实例独占租约：`resource_id,owner,task_id,run_id,parent_hashes,allocation_id,issued_at,expires_at,heartbeat_at,fencing_token`。领取时递增 token；TTL 过期只表示需核验，先确认旧进程结束或隔离，再转交。过期 worker 的旧 token 禁止发布 checkpoint/status/结果。物理 GPU 与其 MIG 子资源不能重叠授予；多个不同 MIG 实例只在 scheduler 明确授权时可并发。
+
+### 2.1 命令与多写入者安全
+
+- 执行器仅接受 `runner_registry.json` 中经过源码审查的 `task_type → caap.* 入口 → argv` 映射；registry 必须绑定已审查实现 hash，不允许实验配置自定义入口/脚本或修改 registry。每项登记 `entrypoint_id,argv_template,input_schema,output_schema,state_contract,capabilities,allowed_paths`。
+- `export_print` 的 future 固定映射为 `caap.tools.export_print`，`run_original_attack` 为 F22 拥有的 `caap.attack.baselines.original`；两者 argv 模板均为 `[approved_python,-m,fixed_module,--config,resolved_config,--out,new_run_dir]`。前者只导出文件、不自动调用物理打印机；后者只调用锁定版本原法 wrapper，查询/网络权限与预算单独授权。接口实现和对应验收前，这两项均不可执行。
+- `validate_recognizer` 的 future 固定映射为 F09 的 `caap.tools.validate_recognizers`，argv 为 `[approved_python,-m,fixed_module,--config,resolved_entry_config,--role,recognizer_val,--out,new_run_dir]`；配置只含该条目的真实权重/角色/标准与批准上下文，不由 worker 扫完整 registry 自选目标。输出逐样本 clean、metrics 和 model-gate；无 patch、无 optimizer。缺局部前提时只阻塞该条目和后代。
+- 其他 task_type 同样必须有明确已审查映射，不能只登记以上几种类型就开放全队列。配置是数据，不接受任意 shell、动态 import、eval/exec 或未经审查脚本路径；参数类型/范围/路径校验后用 argv 调用，不用 `shell=True` 拼接。
+- 配置路径 resolve 后必须在授权根；拒绝路径穿越、逃逸 symlink、覆盖原始数据和旧 run。未知键直接拒绝，不吞掉后按默认值运行。
+- F 任务派发前绑定允许文件/子包、owner 与验收；热点文件串行。新文件先过落位门禁，声明用途、调用方、测试和父目录，不在根目录堆 helper，不复制出第二套 runtime。
+- 文件锁与资源租约分开：源码写入锁防止覆盖他人改动，GPU/task 租约防止重复执行。多 writer 状态需真实竞争、过期 token、崩溃/恢复测试，单机“试过一次”不算通过。
+- LLM 提出代码补丁必须走开发审查、测试和语义失效分析后再执行；不能让实验配置携带代码在 worker 上即时运行。
 
 ## 3. 自主工作循环
 
@@ -41,6 +70,10 @@
 7. 遇到资产/许可阻塞，标记状态并选择不依赖它的任务，不无限空转等待。
 
 一次实现至少返回：变更摘要、文件、精确测试命令、退出码、测试数量与 skip、环境、证据路径、未解决问题、下一任务。只在关键点向用户发送摘要。
+
+搜索/训练是另外一条受限循环：在已批准候选域、次数、更新与 GPU-hours 内观察 attack_dev/attack_select，完整记录所有候选，达到停止条件就冻结或说明不足。attack_confirm 仅按预注册规则消费；final 不参与下一候选决策。source-only 任务不能接收目标模型输出、目标 ASR 或阈值作为方法反馈。
+
+开发门禁测试可以使用合成夹具，计算门禁必须使用真实有效资产与来源。真实识别器权重缺失时，若数据/许可/预算足够则推进 train_recognizer；缺数据才阻塞。不支持 embedding/认证的模型先做能力审计与合法适配，不以暂未实现为由从 full 中消失。
 
 ## 4. 故障分类与自动动作
 
@@ -70,7 +103,7 @@
 | **变更** | **必须失效的产物** | **通常无需重做** |
 | --- | --- | --- |
 | 训练数据、损失、合成几何、训练归一化修正 | 相关补丁与全部下游评估；受影响基线同样失效 | 无关数据集/模型且依赖未变的 run |
-| 纯评估分母或阈值实现修正 | 相关指标/表格；若原预测/分数足够则重新派生 | 未使用错误指标选模的训练 |
+| 纯评估分母或阈值实现修正 | 相关指标/表格；原分数足够则重新派生；threshold_known 训练若依赖该阈值也失效 | 未以错误指标选模、未使用该阈值的训练 |
 | 被修正指标曾用于选模 | 最佳 checkpoint 选择及下游；没有所有候选 checkpoint 时可能重训 | 不能假定只重算最终一轮就够 |
 | 实拍 grouping/retry 逻辑修正 | 物理指标与稿件结论 | 原始照片和可信逐次输出 |
 | 图例、错别字、无语义注释 | 相关文档 | 算法实验 |
@@ -80,11 +113,13 @@
 
 最终测试阶段发现真实 bug 时允许修复，但必须把所有受影响方法/seed/条件一致重跑，并披露重分析；不只修对主方法有利的格子。
 
+迁移阶段的数学模块 bytehash 相等证明的是“机械搬迁未改算法”，不是后续永久恢复旧 bug 的要求。F14/F17 语义升级先登记新协议和独立行为/负例断言，再将受改维护模块的不变性检查转换为新版本验收，保留变更理由和证据；归档原hash与migration manifest不改，未受改模块仍受旧迁移约束。不得简单删测试或改预期数值凑绿，也不把合法新语义差异送入无限自动回退。
+
 ## 6. 只在关键点通知用户
 
 ### D0：输入、许可与资源
 
-一次集中说明缺数据、权重、算力、总预算、实拍授权和论文源码。用户暂未回复时继续离线开发。
+一次集中说明缺数据、权重、安装/下载权限、scheduler allocation、显式总 GPU-hours/存储/时长、实拍授权和论文源码。用户暂未回复时继续离线开发。初始 observational phase 在已有读取权限内审计环境/metadata，不要求先获训练许可；但不以观察名义训练或读取 final 评分。
 
 ### D1：协议冻结或实质改变
 
@@ -112,12 +147,18 @@ D1 后改变预算、模块、K、分割、目标策略、主终点、数据域�
 - 预算不足时停止新派发，保留完整 checkpoint；不擅自借用其他设备。
 - 没有可执行任务且全部被阻塞时，输出简短缺口清单并结束当前执行；以后可从状态恢复，不能假装在后台持续工作。
 
-本计划不自动创建定时任务或远程运行环境；如需定时调度或云资源，另行取得用户明确请求和配置。
+本计划不自动创建定时任务或远程运行环境。用户未来从获准提交后的根仓自行 clone；未提交/未推送的本地重构不能声称远端已更新，Agent 不自动 commit/push。
+
+future 调度遵守 Slurm/srun 的实际 allocation 与 CUDA 可见性，空闲显存不是资源授权；详见 05。默认独立任务单 GPU/MIG，DDP 未经数值/恢复/吞吐实测不得启用。先实测资源再核算总 GPU-hours，预算足够仍有明确上限。
+
+`tmux`、nohup 或 scheduler 保活只保证对应进程，不保证 LLM Agent 持续在线。会话中断后，已经实现且获准的受限执行器可以完成已冻结 argv；需新决策、修代码或扩权限时等待 Agent/用户恢复。当前并未交付该执行器，不声称无限后台自治。
+
+无可执行任务时写交接并退出，区分 `full_scope_complete/execution_exhausted/partial_blocked`；后两者绝非科研全量完成。范围取消保留原 full 缺口，不能通过重算分母变成 complete。
 
 ## 8. 独立审查检查表
 
 - 是否真的加载正确识别器？加载失败会不会继续？
-- patch_train、attack_val、calibration、gallery、test 的交集是否合规？
+- recognizer_fit/val、MS-DIFE 内层、patch_train、attack_dev/select/confirm、calibration/gallery/final 的交集和历史曝光是否合规？
 - deploy 是否任何情况下都不调用测试输入条件模块？
 - 面积、缩放、插值与位置是否满足已声明的合同？
 - k/n、分母过滤、空分母、目标策略和退化 clean 对照是否一致？
@@ -126,6 +167,10 @@ D1 后改变预算、模块、K、分割、目标策略、主终点、数据域�
 - 物理重复、双掌和配对身份相关性是否被正确处理？
 - 合成、示例、失败、失效和真实结果能否被收集器区分？
 - 所有主张能否指向证据，缺失证据是否仍被标记未完成？
+- 原/匹配基线、source-only/target-informed、分类/验证专用目标是否分名，模板/阈值权限是否真实？
+- 每个新任务类型是否有独立产物 schema、恢复与失效规则，精度入键而 GPU placement 不入键？
+- 设备是否属于实际 allocation，TTL/fencing/父 hash/多 writer 锁是否覆盖真实竞争？
+- 取消范围或技术重试是否错误地提高 full 完成率，是否把 execution_exhausted 冒充 full_scope_complete？
 
 审查发现不改变契约来“适配”错误实现。契约确实不可行时由控制 Agent 提出修订并经相应决策点确认。
 

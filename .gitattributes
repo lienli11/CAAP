@@ -1,0 +1,19 @@
+# Keep maintained text portable and deterministic across checkout settings.
+* text=auto
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Frozen evidence is verified byte-for-byte; never normalize these files.
+archive/legacy/** -text
+paper/sources/** -text
+LICENSE -text
+*.pth -text
+*.pdf -text
+*.png -text
